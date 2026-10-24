@@ -29,7 +29,7 @@ export type Actor = {
 };
 
 type Step =
-  | { t: 'walk'; x: number; y: number; fast?: boolean }
+  | { t: 'walk'; x: number; y: number; fast?: boolean; run?: boolean }
   | { t: 'perf'; perf: Perf; st: Station; ballKick?: boolean; sweep?: boolean }
   | { t: 'pose'; pose: string; n: number; face?: 1 | -1 }
   | { t: 'exit' }
@@ -91,8 +91,8 @@ export function useDirector(initial: PlaceId, opts: { onPlace: (p: PlaceId) => v
     if (extra?.bubbleIcon) steps.push({ t: 'bubble', b: { kind: 'icon', icon: extra.bubbleIcon } });
     if (st.jog) {
       // a few laps back and forth, then the performance itself
-      for (let i = 0; i < 2; i++) steps.push({ t: 'walk', x: st.x + st.jog, y: st.y }, { t: 'walk', x: st.x - st.jog, y: st.y });
-      steps.push({ t: 'walk', x: st.x, y: st.y });
+      for (let i = 0; i < 2; i++) steps.push({ t: 'walk', x: st.x + st.jog, y: st.y, fast: true, run: true }, { t: 'walk', x: st.x - st.jog, y: st.y, fast: true, run: true });
+      steps.push({ t: 'walk', x: st.x, y: st.y, run: true });
     } else {
       steps.push({ t: 'perf', perf, st, ballKick: extra?.ballKick, sweep: extra?.sweep });
     }
@@ -166,7 +166,7 @@ export function useDirector(initial: PlaceId, opts: { onPlace: (p: PlaceId) => v
           else {
             A.x += (dx / dist) * sp; A.y += (dy / dist) * sp;
             if (Math.abs(dx) > 0.5) A.face = dx > 0 ? 1 : -1;
-            setPose(dy < -1.5 && Math.abs(dy) > Math.abs(dx) ? 'back' : c.n % 4 < 2 ? 'walk1' : 'walk2');
+            setPose(dy < -1.5 && Math.abs(dy) > Math.abs(dx) ? 'back' : s.run ? (c.n % 4 < 2 ? 'run' : 'walk1') : c.n % 4 < 2 ? 'walk1' : 'walk2');
             c.n++;
           }
         } else if (s.t === 'pose') {

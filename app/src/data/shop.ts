@@ -6,7 +6,7 @@ export type Slot =
   | 'gBench' | 'gPond' | 'gBird' | 'gSwing' | 'gFlowers'
   | 'hat' | 'glasses' | 'hero';
 
-export type ShopTab = 'furniture' | 'decor' | 'plants' | 'walls' | 'garden' | 'wardrobe' | 'friends';
+export type ShopTab = 'autumn' | 'furniture' | 'decor' | 'plants' | 'walls' | 'garden' | 'wardrobe' | 'friends';
 
 export type Item = {
   id: string;
@@ -65,6 +65,10 @@ export const ITEMS: Item[] = [
   { id: 'hat_party', name: 'Party Cone', slot: 'hat', tab: 'wardrobe', art: u('hat_party'), price: 80, level: 2, note: 'Every day is a little party.' },
   { id: 'hat_crown', name: 'Wonky Crown', slot: 'hat', tab: 'wardrobe', art: u('hat_crown'), price: 300, level: 6, note: 'For the ruler of small habits.', rarity: 'epic' },
   { id: 'glasses', name: 'Smart Specs', slot: 'glasses', tab: 'wardrobe', art: u('glasses'), price: 75, level: 2, note: '+10 intelligence (visually).' },
+  // seasonal: autumn (limited, see SEASON_UNTIL)
+  { id: 'pumpkin', name: 'Round Boy', slot: 'plantB', tab: 'autumn', art: f('pumpkin'), price: 45, level: 1, note: 'Not for soup. He has a name.', rarity: 'rare' },
+  { id: 'wreath', name: 'Leaf Wreath', slot: 'clock', tab: 'autumn', art: f('wreath'), price: 70, level: 1, note: 'Smells like crunchy walks.', rarity: 'rare' },
+  { id: 'rug_leaves', name: 'Leaf Pile', slot: 'rug', tab: 'autumn', art: f('rug_leaves'), price: 90, level: 1, note: 'A rug you are allowed to jump in.', rarity: 'rare' },
   // friends (heroes)
   { id: 'noodle', name: 'Noodle', slot: 'hero', tab: 'friends', art: { kind: 'hero', key: 'noodle' }, price: 0, level: 1, note: 'Tired but trying. Like you.' },
   { id: 'pebble', name: 'Mossy', slot: 'hero', tab: 'friends', art: { kind: 'hero', key: 'pebble' }, price: 400, level: 5, note: 'A rock with a mushroom. Very grounded.', rarity: 'epic' },
@@ -73,7 +77,10 @@ export const ITEMS: Item[] = [
 
 export const itemById = (id: string) => ITEMS.find(i => i.id === id);
 
+export const SEASON_UNTIL = new Date(2026, 11, 1).getTime(); // autumn items leave the shop on 1 Dec
+
 export const TABS: { id: ShopTab; label: string }[] = [
+  { id: 'autumn', label: 'Autumn ✦' },
   { id: 'furniture', label: 'Seats' },
   { id: 'decor', label: 'Decor' },
   { id: 'plants', label: 'Plants' },

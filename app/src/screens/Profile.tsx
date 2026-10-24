@@ -6,7 +6,7 @@ import { CATEGORIES } from '../data/activities';
 import { dayKey } from '../game/rules';
 import { useGame } from '../state/store';
 import { C, F } from '../theme';
-import { Btn, Icon, Progress, Sheet, T } from '../ui/kit';
+import { Btn, Icon, Progress, Sheet, T, Tabs } from '../ui/kit';
 
 export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const g = useGame();
@@ -17,6 +17,12 @@ export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => 
     return { k, label: new Date(t).toLocaleDateString(undefined, { weekday: 'narrow' }), n: g.s.log.filter(l => dayKey(l.at) === k).length };
   });
   const byCat = CATEGORIES.map(c => ({ c, n: g.s.log.filter(l => l.cat === c.id).length }));
+  const now = new Date();
+  const monthLog = g.s.log.filter(l => { const d = new Date(l.at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+  const monthMems = g.s.memories.filter(m => { const d = new Date(m.at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+  const monthTop = CATEGORIES.map(c => ({ c, n: monthLog.filter(l => l.cat === c.id).length })).sort((a, b) => b.n - a.n)[0];
+  const monthName = now.toLocaleDateString('en', { month: 'long' });
+  const activeDays = new Set(monthLog.map(l => dayKey(l.at))).size;
   const maxCat = Math.max(1, ...byCat.map(x => x.n));
   const confirmReset = () => {
     const go = () => { g.reset(); onClose(); };
@@ -54,6 +60,13 @@ export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => 
           </View>
           <T v="note" size={15} color={C.inkSoft}>Every 7 days in a row earns a cozy day: miss one day and the streak waits for you.</T>
         </View>
+        <View style={{ backgroundColor: '#F4EDE0', borderRadius: 16, padding: 16, gap: 8, transform: [{ rotate: '-0.6deg' }] }}>
+          <T v="display" size={24}>Your {monthName} in Little Life</T>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {monthMems.slice(0, 3).map(m => m.photo ? <Image key={m.id} source={{ uri: m.photo }} style={{ width: 70, height: 84, borderRadius: 4, transform: [{ rotate: `${(m.at % 7) - 3}deg` }] }} contentFit="cover" /> : null)}
+          </View>
+          <T v="note" size={18}>{monthLog.length ? `${monthLog.length} things done on ${activeDays} days. Mostly ${monthTop.c.label.toLowerCase()}${monthMems.length ? `, and ${monthMems.length} ${monthMems.length === 1 ? 'memory' : 'memories'} kept` : ''}.` : `${monthName} is just getting started. Noodle is waiting with a notebook.`}</T>
+        </View>
         <View style={{ backgroundColor: C.sage200, borderRadius: 16, padding: 14, gap: 8 }}>
           <T v="uiBold" size={12} color={C.sageInk} style={{ letterSpacing: 0.6 }}>ALL TIME · {g.s.log.length} THINGS DONE</T>
           {byCat.map(({ c, n }) => (
@@ -67,6 +80,8 @@ export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => 
         </View>
         <View style={{ backgroundColor: C.sage200, borderRadius: 16, padding: 14, gap: 8 }}>
           <T v="uiBold" size={12} color={C.sageInk} style={{ letterSpacing: 0.6 }}>SETTINGS</T>
+          <T size={13} color={C.inkSoft}>How Noodle is drawn</T>
+          <Tabs tabs={[{ id: 'gouache', label: 'Soft paint' }, { id: 'crayon', label: 'Crayon' }]} value={g.s.style} onChange={v => g.set(s => ({ ...s, style: v }))} />
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
             <TextInput value={name} onChangeText={setName} placeholder="Your name" placeholderTextColor={C.inkFaint} maxLength={20}
               style={{ flex: 1, backgroundColor: C.sage100, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontFamily: F.hand, fontSize: 18, color: C.ink }} />

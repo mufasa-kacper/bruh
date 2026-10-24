@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { ITEMS, Item, OPTIONAL_SLOTS, ShopTab, Slot, TABS } from '../data/shop';
+import { ITEMS, Item, OPTIONAL_SLOTS, SEASON_UNTIL, ShopTab, Slot, TABS } from '../data/shop';
 import { useGame } from '../state/store';
 import { C } from '../theme';
 import { Btn, CoinPill, Pressy, Sheet, T, WobbleBox, haptic } from '../ui/kit';
@@ -14,7 +14,9 @@ export function ShopSheet({ open, onClose, onPreview, onTab, toast }: {
   toast: (m: string) => void;
 }) {
   const g = useGame();
-  const [tab, setTab] = useState<ShopTab>('furniture');
+  const seasonOn = Date.now() < SEASON_UNTIL;
+  const tabs = TABS.filter(t => t.id !== 'autumn' || seasonOn);
+  const [tab, setTab] = useState<ShopTab>(seasonOn ? 'autumn' : 'furniture');
   const [sel, setSel] = useState<Item | null>(null);
   useEffect(() => { if (!open) { setSel(null); onPreview(null, null); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -34,12 +36,13 @@ export function ShopSheet({ open, onClose, onPreview, onTab, toast }: {
   return (
     <Sheet open={open} onClose={onClose} height={0.5} title="Shop" right={<CoinPill value={g.s.coins} />}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: 14, gap: 6, paddingBottom: 8 }}>
-        {TABS.map(t => (
+        {tabs.map(t => (
           <Pressy key={t.id} onPress={() => { setTab(t.id); setSel(null); onPreview(null, null); onTab(t.id); }} style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 99, backgroundColor: tab === t.id ? C.sage300 : 'transparent' }}>
             <T v="uiBold" size={13} color={tab === t.id ? C.ink : C.sageInk}>{t.label}</T>
           </Pressy>
         ))}
       </ScrollView>
+      {tab === 'autumn' ? <T v="note" size={15} color={C.inkSoft} style={{ paddingHorizontal: 18, marginBottom: 6 }}>Autumn things, only until the end of November. Crunchy.</T> : null}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 110, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 }}>
         {items.map(it => {
           const own = g.s.owned.includes(it.id);

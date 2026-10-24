@@ -1,4 +1,6 @@
+import { Image } from 'expo-image';
 import React, { useState } from 'react';
+import { ACH } from '../assets';
 import { ScrollView, View } from 'react-native';
 import { achievementsView, useGame } from '../state/store';
 import { C } from '../theme';
@@ -67,9 +69,16 @@ export function QuestsSheet({ open, onClose, onClaimed }: { open: boolean; onClo
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 }}>
             {ach.map(({ a, value, done, claimed }) => (
               <View key={a.id} style={{ width: '48.5%', backgroundColor: C.sage200, borderRadius: 16, padding: 12, gap: 6 }}>
-                <View style={{ height: 70, borderRadius: 12, borderWidth: 5, borderColor: done ? '#C9A46B' : '#C9C3B9', backgroundColor: done ? '#F3EBD9' : '#E4E0DA', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name={a.icon as any} size={44} style={{ opacity: done ? 1 : 0.3 }} />
-                </View>
+                {ACH['ach_' + a.id] ? (
+                  <View style={{ height: 150, alignItems: 'center', justifyContent: 'center' }}>
+                    <Image source={ACH['ach_' + a.id].src} style={{ width: '100%', height: 150, opacity: done ? 1 : 0.28 }} contentFit="contain" />
+                    {!done ? <View style={{ position: 'absolute', alignItems: 'center' }}><Icon name="lock" size={30} /></View> : null}
+                  </View>
+                ) : (
+                  <View style={{ height: 70, borderRadius: 12, borderWidth: 5, borderColor: done ? '#C9A46B' : '#C9C3B9', backgroundColor: done ? '#F3EBD9' : '#E4E0DA', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon name={a.icon as any} size={44} style={{ opacity: done ? 1 : 0.3 }} />
+                  </View>
+                )}
                 <T v="hand" size={17}>{a.title}</T>
                 <T v="note" size={14} color={C.inkSoft} numberOfLines={2}>{a.joke}</T>
                 <T size={11} color={C.sageInk}>{a.req}</T>

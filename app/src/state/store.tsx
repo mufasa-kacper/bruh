@@ -28,6 +28,7 @@ export type GameState = {
   giftsOpened: number;
   bubbleDay: string;
   focus: string[];
+  style: 'gouache' | 'crayon';
 };
 
 const KEY = 'littlelife.v1';
@@ -36,7 +37,7 @@ const fresh = (): GameState => ({
   v: 1, onboarded: false, name: '', coins: 50, xp: 0, log: [], memories: [],
   owned: [...START_OWNED], equipped: { ...START_EQUIPPED }, frameMem: {},
   streak: { count: 0, best: 0, lastDay: '', freezes: 0 },
-  claimed: [], achClaimed: [], gifts: 1, giftsOpened: 0, bubbleDay: '', focus: [],
+  claimed: [], achClaimed: [], gifts: 1, giftsOpened: 0, bubbleDay: '', focus: [], style: 'gouache',
 });
 
 export type GiftResult = { kind: 'item'; id: string } | { kind: 'coins'; amount: number };

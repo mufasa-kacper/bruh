@@ -69,6 +69,8 @@ export function Home() {
     if (preview.id === '__none') delete e[preview.slot]; else e[preview.slot] = preview.id;
     return e;
   }, [g.s.equipped, preview]);
+  // The main character can be drawn in two techniques (setting in profile).
+  const sceneEquipped = useMemo(() => ((equipped.hero ?? 'noodle') === 'noodle' && g.s.style === 'crayon' ? { ...equipped, hero: 'crayon' } : equipped), [equipped, g.s.style]);
 
   const logIt = useCallback((actId: string, min: number, note?: string) => {
     const f = findActivity(actId)!;
@@ -79,7 +81,7 @@ export function Home() {
     // Once a place on the map is unlocked, some activities move out into town.
     const up = UPGRADES[actId];
     const upOk = up && g.level.level >= (PLACES.find(p => p.id === up.place)?.level ?? 99);
-    const st = upOk ? up : STATIONS[f.act.station];
+    const st = upOk ? up : actId === 'run' ? { ...STATIONS.mat, jog: 30 } : STATIONS[f.act.station];
     setStatus(`${heroName} is ${upOk && UPGRADE_DOING[actId] ? UPGRADE_DOING[actId] : f.act.doing}`);
     const perf = upOk && UPGRADE_POSES[actId] ? { ...f.act.perf, poses: UPGRADE_POSES[actId] } : f.act.perf;
     d.perform(st, perf, {
@@ -95,7 +97,7 @@ export function Home() {
   const onShopTab = (t: ShopTab) => {
     if (d.actor.busy) return;
     if (t === 'garden' && place !== 'garden') d.teleport('garden');
-    if (t !== 'garden' && t !== 'wardrobe' && t !== 'friends' && place !== 'home') d.teleport('home');
+    if (t !== 'garden' && t !== 'wardrobe' && t !== 'friends' && place !== 'home') d.teleport('home'); // autumn items live in the flat
     if ((t === 'wardrobe' || t === 'friends') && place !== 'home' && place !== 'garden') d.teleport('home');
   };
 
@@ -158,7 +160,7 @@ export function Home() {
           tick={d.tick}
           height={sceneH}
           width={width}
-          equipped={equipped}
+          equipped={sceneEquipped}
           frameMem={g.s.frameMem}
           memories={g.s.memories}
           follow={follow}

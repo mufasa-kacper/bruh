@@ -10,12 +10,13 @@ const FRIEND_POSE: Record<string, string> = {
   idle: 'idle', walk1: 'walk', walk2: 'idle', back: 'walk', happy: 'happy', jump: 'happy', wave: 'happy',
   read: 'read', laptop: 'read', sit: 'read', sofa_relax: 'read', sleep: 'sleep', meditate: 'read',
   stretch: 'happy', jumpjack: 'happy', squat: 'idle', kick: 'happy', cook: 'idle', water: 'idle', broom: 'walk', photo: 'idle', music: 'happy',
+  phone: 'happy', eat: 'read', paint: 'idle', guitar: 'happy', run: 'walk',
 };
-const HERO_SCALE: Record<string, number> = { noodle: 1, pebble: 0.78, blanket: 0.8 };
+const HERO_SCALE: Record<string, number> = { noodle: 1, crayon: 1, pebble: 0.78, blanket: 0.8 };
 
 // Per-pose tweaks for where a hat sits (dx/dy in fractions of the hat size) or hide it.
 const HAT_FIX: Record<string, { dx?: number; dy?: number; hide?: boolean; rot?: number }> = {
-  sleep: { hide: true }, stretch: { hide: true }, music: { hide: true },
+  sleep: { hide: true }, stretch: { hide: true }, music: { hide: true }, phone: { dx: 0.08 },
   squat: { dy: -0.28 }, meditate: { dy: -0.22 }, kick: { dy: -0.18 }, sofa_relax: { rot: -8 },
 };
 
@@ -40,7 +41,7 @@ const jit = (tick: number, k: number) => {
 
 export const charSize = (hero: string, pose: string, unit: number, scale = 1) => {
   const set = CHARS[hero] ?? CHARS.noodle;
-  const p = set[hero === 'noodle' ? pose : FRIEND_POSE[pose] ?? 'idle'] ?? set.idle;
+  const p = set[pose] ?? set[FRIEND_POSE[pose] ?? 'idle'] ?? set.idle;
   const k = PX_TO_U * unit * (HERO_SCALE[hero] ?? 1) * scale;
   return { p, w: p.w * k, h: p.h * k, k };
 };
@@ -54,7 +55,8 @@ function CharacterImpl({ hero, pose, face, rot = 0, scale = 1, unit, tick, squas
   const hatItem = hat ? itemById(hat) : undefined;
   const fix = HAT_FIX[pose] ?? {};
   const hatArt = hatItem && hatItem.art.kind === 'ui' ? UI[hatItem.art.key] : null;
-  const hatW = 14 * unit * (HERO_SCALE[hero] ?? 1) * scale * (hero === 'noodle' ? 1 : 1.3);
+  const isNoodle = hero === 'noodle' || hero === 'crayon';
+  const hatW = 14 * unit * (HERO_SCALE[hero] ?? 1) * scale * (isNoodle ? 1 : 1.3);
   const hatH = hatArt ? (hatW * hatArt.h) / hatArt.w : 0;
   const hx = p.head[0] * w - hatW / 2 + (fix.dx ?? 0) * hatW;
   const hy = p.head[1] * h - hatH * 0.78 - (fix.dy ?? 0) * hatH;
@@ -69,7 +71,7 @@ function CharacterImpl({ hero, pose, face, rot = 0, scale = 1, unit, tick, squas
       }}
     >
       <Image source={frame} style={{ width: w, height: h }} contentFit="contain" cachePolicy="memory" />
-      {glasses && hero === 'noodle' && !['back', 'sleep'].includes(pose) ? (
+      {glasses && isNoodle && !['back', 'sleep'].includes(pose) ? (
         <Image source={gl.src} style={{ position: 'absolute', width: glW, height: glH, left: p.head[0] * w - glW / 2, top: p.head[1] * h + h * 0.07 }} contentFit="contain" />
       ) : null}
       {hatArt && !fix.hide ? (

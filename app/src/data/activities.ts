@@ -51,7 +51,8 @@ export const CATEGORIES: Category[] = [
     id: 'work', label: 'Work', icon: 'cat_create', tint: '#E4DDC0', blurb: 'Get things done',
     activities: [
       { id: 'deep', label: 'Deep work', station: 'desk', perf: hold('laptop', 4600), doing: 'in the zone. do not disturb' },
-      { id: 'create', label: 'Make art', station: 'deskRead', perf: hold('read'), doing: 'drawing a portrait of a sock' },
+      { id: 'create', label: 'Make art', station: 'rug', perf: hold('paint', 5200), doing: 'painting a very serious sun' },
+      { id: 'play', label: 'Played music', station: 'rug', perf: { poses: [['guitar', 4], ['guitar', 4]], ms: 5200 }, doing: 'playing the one chord it knows' },
       { id: 'write', label: 'Write', station: 'desk', perf: hold('laptop'), doing: 'writing the great noodle novel' },
     ],
   },
@@ -59,7 +60,8 @@ export const CATEGORIES: Category[] = [
     id: 'social', label: 'People', icon: 'cat_social', tint: '#E8C9C2', blurb: 'Time with others',
     activities: [
       { id: 'friends', label: 'Friends', station: 'bench', perf: hold('sofa_relax', 4600), doing: 'gossiping on the bench' },
-      { id: 'family', label: 'Family', station: 'sofa', perf: { poses: [['wave', 4], ['sofa_relax', 6]], ms: 4800 }, doing: 'calling grandma back' },
+      { id: 'family', label: 'Family', station: 'wall', perf: { poses: [['phone', 6], ['happy', 3]], ms: 5000 }, doing: 'calling grandma back' },
+      { id: 'call', label: 'Called someone', station: 'rug', perf: { poses: [['phone', 8]], ms: 4800 }, doing: 'chatting on the phone, very animated' },
       { id: 'date', label: 'Date', station: 'bench', perf: { poses: [['happy', 4], ['sofa_relax', 6]], ms: 4800 }, doing: 'blushing (yellow-ly)' },
       { id: 'helped', label: 'Helped someone', station: 'wall', perf: { poses: [['wave', 4], ['happy', 4]], ms: 4200 }, doing: 'being a good noodle' },
     ],
@@ -86,6 +88,7 @@ export const CATEGORIES: Category[] = [
     id: 'care', label: 'Self-care', icon: 'cat_care', tint: '#CDE1E6', blurb: 'Be kind to you',
     activities: [
       { id: 'water', label: 'Drank water', station: 'rug', perf: { poses: [['happy', 4], ['idle', 4]], ms: 3800 }, doing: 'hydrated and smug about it' },
+      { id: 'meal', label: 'Ate well', station: 'deskRead', perf: hold('eat', 4800), doing: 'slurping soup. delicious noises' },
       { id: 'sleep', label: 'Slept well', station: 'bed', perf: hold('sleep', 4600), doing: 'dreaming of soup' },
       { id: 'journal', label: 'Journaled', station: 'deskRead', perf: hold('read'), doing: 'writing feelings in tiny letters' },
       { id: 'outside', label: 'Got fresh air', station: 'gardenRug', perf: { poses: [['stretch', 5], ['idle', 4]], ms: 4600 }, doing: 'smelling the grass' },

@@ -21,8 +21,10 @@ for hero in sorted(os.listdir(f'{IMG}/chars')):
         L.append(f"    {p}: {{ frames: [{fr}], w: {m['w']}, h: {m['h']}, head: [{m['head'][0]}, {m['head'][1]}] }},")
     L.append('  },')
 L.append('};\n')
-for name, sub in [('FURN', 'furniture'), ('UI', 'ui'), ('TEX', 'tex'), ('SCENES', 'scenes')]:
-    L.append(f'export const {name} = {{')
+for name, sub in [('FURN', 'furniture'), ('UI', 'ui'), ('TEX', 'tex'), ('SCENES', 'scenes'), ('ACH', 'ach')]:
+    if not os.path.isdir(f'{IMG}/{sub}'):
+        L.append(f'export const {name}: Record<string, Sized> = {{}};\n'); continue
+    L.append(f'export const {name}: Record<string, Sized> = {{' if name == 'ACH' else f'export const {name} = {{')
     for fn in sorted(os.listdir(f'{IMG}/{sub}')):
         k, ext = os.path.splitext(fn)
         w, h = size(f'{IMG}/{sub}/{fn}')

@@ -149,13 +149,14 @@ export const STATIONS: Record<StationId, Station> = {
 
 // Better stations that become available once a place on the map is unlocked.
 export const UPGRADES: Record<string, Station> = {
+  // home fallback for running: laps in the garden
   // café
   friends: { place: 'cafe', x: 94, y: 93, face: 1, z: 9 },
   date: { place: 'cafe', x: 94, y: 93, face: 1, z: 9 },
   study: { place: 'cafe', x: 94, y: 93, face: 1, z: 9 },
   write: { place: 'cafe', x: 94, y: 93, face: 1, z: 9 },
   // park
-  run: { place: 'park', x: 100, y: 93, face: 1, z: 20, jog: 34 },
+  run: { place: 'park', x: 100, y: 93, face: 1, z: 20, jog: 40 },
   chill: { place: 'park', x: 62, y: 80, face: 1, z: 6 },
   outside: { place: 'park', x: 110, y: 92, face: 1, z: 20 },
   // field
