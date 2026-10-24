@@ -3,7 +3,7 @@ import { ScrollView, View } from 'react-native';
 import { ITEMS, Item, OPTIONAL_SLOTS, ShopTab, Slot, TABS } from '../data/shop';
 import { useGame } from '../state/store';
 import { C } from '../theme';
-import { Btn, CoinPill, Pressy, Scribble, Sheet, T, haptic } from '../ui/kit';
+import { Btn, CoinPill, Pressy, Sheet, T, WobbleBox, haptic } from '../ui/kit';
 import { ItemArt } from './Rewards';
 
 export function ShopSheet({ open, onClose, onPreview, onTab, toast }: {
@@ -48,7 +48,7 @@ export function ShopSheet({ open, onClose, onPreview, onTab, toast }: {
           const isSel = sel?.id === it.id;
           return (
             <Pressy key={it.id} onPress={() => choose(it)} style={{ width: '48.5%', height: 150, backgroundColor: C.sage200, borderRadius: 16, padding: 10, alignItems: 'center', justifyContent: 'space-between' }}>
-              {eq ? <Scribble w={168} h={150} color={C.leaf} round={false} seed={it.id.length} /> : isSel ? <Scribble w={168} h={150} color={C.sageInk} dashed round={false} seed={it.id.length + 3} /> : null}
+              <WobbleBox mode={eq ? 'solid' : isSel ? 'dashed' : null} seed={it.id.length} />
               <View style={{ flex: 1, justifyContent: 'center', opacity: lk ? 0.45 : 1 }}><ItemArt item={it} size={74} /></View>
               <T v="hand" size={16} numberOfLines={1}>{it.name}</T>
               <T size={11} color={eq ? C.leaf : C.inkSoft}>{eq ? 'In use ✓' : own ? 'Owned' : lk ? `Level ${it.level}` : it.price ? `◎ ${it.price}` : 'Free'}</T>

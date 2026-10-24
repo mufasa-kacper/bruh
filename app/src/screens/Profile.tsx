@@ -74,6 +74,15 @@ export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => 
           </View>
           <Pressable onPress={confirmReset} style={{ paddingVertical: 8 }}><T size={13} color={C.rust}>Start over (clear all progress)</T></Pressable>
         </View>
+        <View style={{ backgroundColor: C.sage200, borderRadius: 16, padding: 14, gap: 8 }}>
+          <T v="uiBold" size={12} color={C.sageInk} style={{ letterSpacing: 0.6 }}>TESTER TOOLS</T>
+          <T size={12} color={C.inkSoft}>For trying the app quickly. Remove before release.</T>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Btn small label="+1 level" onPress={() => g.set(s => ({ ...s, xp: s.xp + (g.level.need - g.level.into), gifts: s.gifts + 1 }))} />
+            <Btn small label="+200 coins" onPress={() => g.set(s => ({ ...s, coins: s.coins + 200 }))} />
+            <Btn small label="+gift" ghost onPress={() => g.set(s => ({ ...s, gifts: s.gifts + 1 }))} />
+          </View>
+        </View>
       </ScrollView>
     </Sheet>
   );

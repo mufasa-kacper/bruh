@@ -6,7 +6,8 @@ import type { Memory } from '../data/quests';
 import { itemById, ShopTab, Slot } from '../data/shop';
 import { dayKey, Reward } from '../game/rules';
 import { useDirector } from '../scene/director';
-import { STATIONS } from '../scene/layout';
+import { PlaceId, STATIONS, UPGRADE_DOING, UPGRADES, UPGRADE_POSES } from '../scene/layout';
+import { PLACES } from '../data/places';
 import { World } from '../scene/World';
 import { GiftResult, useGame } from '../state/store';
 import { C } from '../theme';
@@ -43,7 +44,7 @@ export function Home() {
   const hero = g.s.equipped.hero ?? 'noodle';
   const heroName = hero === 'pebble' ? 'Mossy' : hero === 'blanket' ? 'Burrito' : 'Noodle';
 
-  const [place, setPlace] = useState<'home' | 'garden'>('home');
+  const [place, setPlace] = useState<PlaceId>('home');
   const d = useDirector('home', { onPlace: setPlace, hasBench: !!g.s.equipped.gBench });
 
   // Morning greeting / memory flashback once a day.
@@ -75,9 +76,13 @@ export function Home() {
     const r = g.logActivity(actId, min, note);
     pendingReward.current = { ...r, title: `${f.cat.label} · ${f.act.label}` };
     setFollow(true);
-    setStatus(`${heroName} is ${f.act.doing}`);
-    const st = STATIONS[f.act.station];
-    d.perform(st, f.act.perf, {
+    // Once a place on the map is unlocked, some activities move out into town.
+    const up = UPGRADES[actId];
+    const upOk = up && g.level.level >= (PLACES.find(p => p.id === up.place)?.level ?? 99);
+    const st = upOk ? up : STATIONS[f.act.station];
+    setStatus(`${heroName} is ${upOk && UPGRADE_DOING[actId] ? UPGRADE_DOING[actId] : f.act.doing}`);
+    const perf = upOk && UPGRADE_POSES[actId] ? { ...f.act.perf, poses: UPGRADE_POSES[actId] } : f.act.perf;
+    d.perform(st, perf, {
       bubbleIcon: f.cat.icon,
       ballKick: f.act.station === 'ball',
       sweep: f.act.station === 'rugSweep',
@@ -91,15 +96,17 @@ export function Home() {
     if (d.actor.busy) return;
     if (t === 'garden' && place !== 'garden') d.teleport('garden');
     if (t !== 'garden' && t !== 'wardrobe' && t !== 'friends' && place !== 'home') d.teleport('home');
+    if ((t === 'wardrobe' || t === 'friends') && place !== 'home' && place !== 'garden') d.teleport('home');
   };
 
   const [sceneBox, setSceneBox] = useState(0);
-  const sceneH = Math.min(sceneBox, width * 1.25);
+  const sceneH = panel === 'shop' ? Math.min(sceneBox * 0.52, width * 1.25) : Math.min(sceneBox, width * 1.25);
   const hour = new Date().getHours();
   const greet = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const doneToday = g.s.log.filter(l => dayKey(l.at) === dayKey(Date.now())).length;
   const questDots = [...g.quests.daily, ...g.quests.weekly].some(q => q.value >= q.q.goal && !q.claimed);
-  const idleLine = d.actor.place === 'garden' ? `${heroName} is out in the backyard` : d.actor.pose === 'sleep' ? `${heroName} is asleep. shh` : d.actor.pose === 'sofa_relax' ? `${heroName} is lounging on the sofa` : d.actor.pose === 'read' ? `${heroName} is reading something` : `${heroName} is pottering around the flat`;
+  const placeName = PLACES.find(p => p.id === d.actor.place)?.name ?? '';
+  const idleLine = d.actor.place === 'garden' ? `${heroName} is out in the backyard` : d.actor.place !== 'home' ? `${heroName} is hanging out at ${placeName}` : d.actor.pose === 'sleep' ? `${heroName} is asleep. shh` : d.actor.pose === 'sofa_relax' ? `${heroName} is lounging on the sofa` : d.actor.pose === 'read' ? `${heroName} is reading something` : `${heroName} is pottering around the flat`;
 
   return (
     <Paper style={{ flex: 1 }}>
@@ -115,6 +122,7 @@ export function Home() {
         <Pressable onPress={() => setPanel('shop')}><CoinPill value={g.s.coins} /></Pressable>
       </View>
 
+      {panel !== 'shop' ? <>
       <View style={{ paddingHorizontal: 22, marginTop: 10 }}>
         <T v="display" size={30}>{greet}{g.s.name ? `, ${g.s.name}` : ''}.</T>
         <T v="note" size={18} color={C.inkSoft} numberOfLines={2}>{status ?? (doneToday === 0 ? `${idleLine}. nothing logged yet today, and that's okay` : idleLine)}.</T>
@@ -128,7 +136,7 @@ export function Home() {
         <View style={{ position: 'absolute', left: 18, top: 10, transform: [{ rotate: '-5deg' }] }}>
           <Pressy onPress={() => setMapOpen(true)} style={{ alignItems: 'center' }}>
             <Icon name="mapicon" size={40} />
-            <T v="hand" size={13} color={C.sageInk}>{place === 'home' ? 'flat' : 'yard'}</T>
+            <T v="hand" size={13} color={C.sageInk}>{place === 'home' ? 'flat' : place === 'garden' ? 'yard' : 'town'}</T>
           </Pressy>
         </View>
         {g.s.gifts > 0 ? (
@@ -142,8 +150,9 @@ export function Home() {
           </View>
         ) : null}
       </View>
+      </> : null}
 
-      <View style={{ flex: 1, justifyContent: 'flex-end' }} onLayout={e => setSceneBox(e.nativeEvent.layout.height)}>
+      <View style={{ flex: 1, justifyContent: panel === 'shop' ? 'flex-start' : 'flex-end' }} onLayout={e => setSceneBox(e.nativeEvent.layout.height)}>
         {sceneBox > 0 ? <World
           actor={d.actor}
           tick={d.tick}

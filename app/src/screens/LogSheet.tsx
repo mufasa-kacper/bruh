@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { CATEGORIES, Category, DURATIONS } from '../data/activities';
 import { C, F } from '../theme';
-import { Btn, Icon, Pressy, Scribble, Sheet, T, Tabs, haptic } from '../ui/kit';
+import { Btn, Icon, Pressy, Sheet, T, Tabs, WobbleBox, haptic } from '../ui/kit';
 
 export function LogSheet({ open, onClose, onLog, focus, heroName }: { open: boolean; onClose: () => void; onLog: (actId: string, min: number, note?: string) => void; focus: string[]; heroName: string }) {
   const [cat, setCat] = useState<Category | null>(null);
@@ -44,8 +44,8 @@ export function LogSheet({ open, onClose, onLog, focus, heroName }: { open: bool
               const on = act === a.id;
               return (
                 <Pressy key={a.id} onPress={() => setAct(a.id)} style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 14, backgroundColor: on ? C.sage300 : C.sage200 }}>
-                  {on ? <Scribble w={a.label.length * 9 + 40} h={44} color={C.leaf} seed={a.id.length} round={false} strokeWidth={2.5} /> : null}
-                  <T v="hand" size={18} style={{ minWidth: a.label.length * 9 + 12 }}>{a.label}</T>
+                  <WobbleBox mode={on ? 'solid' : null} seed={a.id.length} radius={14} />
+                  <T v="hand" size={18}>{a.label}</T>
                 </Pressy>
               );
             })}

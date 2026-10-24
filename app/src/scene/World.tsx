@@ -9,7 +9,7 @@ import { C } from '../theme';
 import { Icon, T } from '../ui/kit';
 import { Character, charSize } from './Character';
 import type { Actor } from './director';
-import { GARDEN, GARDEN_W, HOME, HOME_FLOOR, HOME_W, Placed } from './layout';
+import { HOME_FLOOR, Placed, PLACES_LAYOUT } from './layout';
 
 type Props = {
   actor: Actor;
@@ -34,7 +34,7 @@ const frameInner: Record<string, [number, number, number, number]> = {
 };
 
 function artFor(p: Placed, equipped: Props['equipped']) {
-  if (p.fixed) return { key: p.fixed as string, a: FURN[p.fixed] };
+  if (p.fixed) { const a = (FURN as Record<string, { src: number; w: number; h: number }>)[p.fixed]; return a ? { key: p.fixed, a } : null; }
   const id = p.slot ? equipped[p.slot] : undefined;
   if (!id) return null;
   const it = itemById(id);
@@ -45,7 +45,8 @@ function artFor(p: Placed, equipped: Props['equipped']) {
 export function World({ actor, tick, height, width, equipped, frameMem, memories, follow, onUserScroll, onTapActor, onTapFrame, onTapBubble }: Props) {
   const u = height / 100;
   const place = actor.place;
-  const W = (place === 'home' ? HOME_W : GARDEN_W) * u;
+  const PL = PLACES_LAYOUT[place];
+  const W = PL.w * u;
   const sv = useRef<ScrollViewInstance>(null);
   const userDragging = useRef(false);
 
@@ -56,7 +57,7 @@ export function World({ actor, tick, height, width, equipped, frameMem, memories
     sv.current?.scrollTo({ x: target, animated: true });
   }, [Math.round(actor.x / 6), follow, place, width]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const layout = place === 'home' ? HOME : GARDEN;
+  const layout = PL.items;
   const wall = equipped.wall ? itemById(equipped.wall) : undefined;
   const floor = equipped.floor ? itemById(equipped.floor) : undefined;
   const wallTex = TEX[(wall?.art.key ?? 'wall_sprig') as keyof typeof TEX];
@@ -87,7 +88,11 @@ export function World({ actor, tick, height, width, equipped, frameMem, memories
     const mem = isFrame ? memById(frameMem[p.slot as string]) : undefined;
     const inner = frameInner[art.key];
     const el = (
-      <View key={p.key} style={{ position: 'absolute', left, top, width: w, height: h, transform: [{ rotate: `${p.rot ?? (isFrame ? (p.key === 'frame2' ? 2 : -2) : 0)}deg` }] }}>
+      <View key={p.key} style={{ position: 'absolute', left, top, width: w, height: h, transform: [
+        ...(p.alive ? [{ translateX: Math.sin(tick * 1.7 + p.cx) * 1.2 }, { translateY: (tick % 6 < 3 ? -1 : 1) * 0.8 }] : []),
+        { scaleX: p.flip ? -1 : 1 },
+        { rotate: `${(p.rot ?? (isFrame ? (p.key === 'frame2' ? 2 : -2) : 0)) + (p.alive ? Math.sin(tick * 2.3 + p.cx) * 1.2 : 0)}deg` },
+      ] }}>
         <Image source={art.a.src} style={{ width: w, height: h }} contentFit="contain" />
         {isFrame && inner ? (
           <View style={{ position: 'absolute', left: inner[0] * w, top: inner[1] * h, width: (inner[2] - inner[0]) * w, height: (inner[3] - inner[1]) * h, backgroundColor: '#EFE7D8', overflow: 'hidden', borderRadius: art.key === 'frame_oval' ? 999 : 2 }}>
@@ -98,6 +103,17 @@ export function World({ actor, tick, height, width, equipped, frameMem, memories
       </View>
     );
     nodes.push({ z: p.z, el });
+  });
+
+  // friends hanging around this place
+  PL.npcs.forEach(n => {
+    const ns = charSize(n.hero, n.pose, u, n.scale ?? 1);
+    nodes.push({ z: n.z - 0.1, el: <Image key={n.key + 's'} source={UI.shadow.src} style={{ position: 'absolute', left: n.x * u - ns.w * 0.4, top: n.y * u - ns.w * 0.1, width: ns.w * 0.8, height: ns.w * 0.2, opacity: 0.7 }} /> });
+    nodes.push({ z: n.z, el: (
+      <View key={n.key} pointerEvents="none" style={{ position: 'absolute', left: n.x * u - ns.w / 2, top: n.y * u - ns.h }}>
+        <Character hero={n.hero} pose={n.pose} face={n.face} unit={u} tick={tick + 5} scale={n.scale ?? 1} breathe />
+      </View>
+    ) });
   });
 
   // character + contact shadow
@@ -175,7 +191,7 @@ export function World({ actor, tick, height, width, equipped, frameMem, memories
               <View style={{ position: 'absolute', left: 0, top: HOME_FLOOR * u + 2.2 * u, width: W, height: 3 * u, backgroundColor: 'rgba(60,40,30,0.07)' }} />
             </>
           ) : (
-            <Image source={SCENES.garden_bg.src} style={{ position: 'absolute', left: 0, top: 0, width: W, height }} contentFit="cover" />
+            <Image source={(SCENES as Record<string, { src: number }>)[PL.bg]?.src} style={{ position: 'absolute', left: 0, top: 0, width: W, height }} contentFit="cover" />
           )}
           {nodes.map(n => n.el)}
           {/* shared paper grain over everything so all layers sit in the same paper */}

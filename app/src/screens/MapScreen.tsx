@@ -4,29 +4,32 @@ import { Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CHARS, SCENES, UI } from '../assets';
 import { Place, PLACES } from '../data/places';
+import type { PlaceId } from '../scene/layout';
 import { useGame } from '../state/store';
 import { C } from '../theme';
 import { Btn, Icon, Pop, T } from '../ui/kit';
 
-export function MapScreen({ open, onClose, here, onGo, hero }: { open: boolean; onClose: () => void; here: 'home' | 'garden'; onGo: (p: 'home' | 'garden') => void; hero: string }) {
+export function MapScreen({ open, onClose, here, onGo, hero }: { open: boolean; onClose: () => void; here: PlaceId; onGo: (p: PlaceId) => void; hero: string }) {
   const { width } = useWindowDimensions();
   const ins = useSafeAreaInsets();
   const g = useGame();
   const [info, setInfo] = useState<Place | null>(null);
-  const H = width * (SCENES.map.h / SCENES.map.w);
+  const MW = width * 1.45;
+  const H = MW * (SCENES.map.h / SCENES.map.w);
   const lvl = g.level.level;
   const pin = CHARS[hero]?.wave ?? CHARS[hero]?.happy ?? CHARS.noodle.idle;
 
   return (
     <Modal visible={open} animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: C.paper }}>
-        <ScrollView contentOffset={{ x: 0, y: H * 0.45 }} contentContainerStyle={{ width, height: H }}>
-          <Image source={SCENES.map.src} style={{ width, height: H }} contentFit="cover" />
+        <ScrollView contentOffset={{ x: 0, y: H * 0.84 - 600 }} contentContainerStyle={{ height: H }}>
+        <ScrollView horizontal contentOffset={{ x: (MW - width) / 2, y: 0 }} showsHorizontalScrollIndicator={false} contentContainerStyle={{ width: MW, height: H }}>
+          <Image source={SCENES.map.src} style={{ width: MW, height: H }} contentFit="cover" />
           {PLACES.map(p => {
             const locked = lvl < p.level;
-            const cx = (p.x / 100) * width, cy = (p.y / 100) * H;
+            const cx = (p.x / 100) * MW, cy = (p.y / 100) * H;
             if (!locked) return null;
-            const r = (p.r / 100) * width;
+            const r = (p.r / 100) * MW;
             return (
               <View key={p.id + 'fog'} pointerEvents="none" style={{ position: 'absolute', left: cx - r * 1.3, top: cy - r * 0.95, width: r * 2.6, height: r * 1.9 }}>
                 <Image source={UI.fog.src} style={{ position: 'absolute', left: 0, top: r * 0.2, width: r * 1.7, height: r * 0.95 }} contentFit="contain" />
@@ -38,7 +41,7 @@ export function MapScreen({ open, onClose, here, onGo, hero }: { open: boolean; 
           })}
           {PLACES.map(p => {
             const locked = lvl < p.level;
-            const cx = (p.x / 100) * width, cy = (p.y / 100) * H;
+            const cx = (p.x / 100) * MW, cy = (p.y / 100) * H;
             const isHere = p.id === here;
             return (
               <Pressable key={p.id} onPress={() => setInfo(p)} style={{ position: 'absolute', left: cx - 70, top: cy - 22, width: 140, alignItems: 'center' }}>
@@ -53,6 +56,7 @@ export function MapScreen({ open, onClose, here, onGo, hero }: { open: boolean; 
               </Pressable>
             );
           })}
+        </ScrollView>
         </ScrollView>
         <View style={{ position: 'absolute', top: ins.top + 8, left: 16, right: 16, flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ flex: 1, backgroundColor: 'rgba(238,242,232,0.94)', borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8 }}>
@@ -76,7 +80,7 @@ export function MapScreen({ open, onClose, here, onGo, hero }: { open: boolean; 
                 <Btn label="Okay" ghost onPress={() => setInfo(null)} style={{ width: '100%' }} />
               </>
             ) : info.playable ? (
-              <Btn label={info.id === here ? 'You are here' : `Go to ${info.name}`} disabled={info.id === here} style={{ width: '100%' }} onPress={() => { setInfo(null); onGo(info.id as 'home' | 'garden'); onClose(); }} />
+              <Btn label={info.id === here ? 'You are here' : `Go to ${info.name}`} disabled={info.id === here} style={{ width: '100%' }} onPress={() => { setInfo(null); onGo(info.id); onClose(); }} />
             ) : (
               <>
                 <T v="note" size={16} style={{ textAlign: 'center', marginBottom: 12 }}>Unlocked! Noodle is still painting the inside. It opens in the next update.</T>

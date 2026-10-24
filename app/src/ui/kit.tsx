@@ -71,18 +71,35 @@ export function Scribble({ w, h, color = C.sky, dashed = false, seed = 1, stroke
   );
 }
 
+const OUTER_KEYS = ['width', 'height', 'flex', 'flexGrow', 'flexShrink', 'flexBasis', 'position', 'left', 'right', 'top', 'bottom', 'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 'marginHorizontal', 'marginVertical', 'alignSelf', 'zIndex'];
+
 export function Pressy({ onPress, style, children, disabled, scaleTo = 0.95 }: { onPress?: () => void; style?: any; children: React.ReactNode; disabled?: boolean; scaleTo?: number }) {
   const s = useSharedValue(1);
   const st = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
+  const flat = StyleSheet.flatten(style) ?? {};
+  const outer: any = {}, inner: any = {};
+  Object.entries(flat).forEach(([k, v]) => { (OUTER_KEYS.includes(k) ? outer : inner)[k] = v; });
+  const sized = outer.width !== undefined || outer.height !== undefined || outer.flex !== undefined;
   return (
     <Pressable
       disabled={disabled}
+      style={outer}
       onPressIn={() => { s.value = withSpring(scaleTo, { damping: 15, stiffness: 400 }); }}
       onPressOut={() => { s.value = withSpring(1, { damping: 9, stiffness: 260 }); }}
       onPress={() => { haptic(); onPress?.(); }}
     >
-      <Animated.View style={[style, st, disabled && { opacity: 0.45 }]}>{children}</Animated.View>
+      <Animated.View style={[inner, sized && { flex: 1, width: '100%' }, st, disabled && { opacity: 0.45 }]}>{children}</Animated.View>
     </Pressable>
+  );
+}
+
+// Tile with a wobbly hand-drawn border that sizes itself to the tile.
+export function WobbleBox({ mode, seed = 1, radius = 16 }: { mode: 'solid' | 'dashed' | null; seed?: number; radius?: number }) {
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  return (
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius }]} onLayout={e => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
+      {mode && box.w ? <Scribble w={box.w} h={box.h} color={mode === 'solid' ? C.leaf : C.sageInk} dashed={mode === 'dashed'} round={false} seed={seed} strokeWidth={2.6} /> : null}
+    </View>
   );
 }
 
